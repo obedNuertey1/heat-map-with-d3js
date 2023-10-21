@@ -81,10 +81,8 @@ class Main extends React.Component{
 			];
 
 			//Rect shapes for main svg
-			const currentMonth = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ];
-			const modifiedMonth = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 12, 11];
-			const mainRect = svg.selectAll("rect").data(dataset).enter().append("rect").attr('class', "cell").attr('data-month', d => ((d.month <= 11)?(d.month):(0))).attr('data-year', d => d.year).attr('data-temp', d => d.variance + json.baseTemperature).attr("width", `7px`).attr("height", `${(h - 2 * padding)/12}px`)
-			.attr("y", d => yScale(new Date(0, modifiedMonth[currentMonth.indexOf(d.month)] - 1, 0, 0, 0, 0, 0)))
+			const mainRect = svg.selectAll("rect").data(dataset).enter().append("rect").attr('class', "cell").attr('data-month', d => d.month).attr('data-year', d => d.year).attr('data-temp', d => d.variance + json.baseTemperature).attr("width", `7px`).attr("height", `${(h - 2 * padding)/12}px`)
+			.attr("y", d => yScale(new Date(0, d.month - 1, 1, 0, 0, 0, 0)))
 			.attr("x", (d, i) => xScale(new Date(d.year, 0, 1, 0, 0, 0, 0)))
 			.attr("fill", d => {
 				if((d.variance + json.baseTemperature) <= 2.8){
@@ -110,28 +108,21 @@ class Main extends React.Component{
 				}else{
 					return '#7c0e09';
 				}
-			}).on('mouseenter', ()=>{
-				d3.select(this).attr("stroke", "black").attr("stroke-width", "1px")
-			}).on('mouseout', ()=>{
-				d3.select(this).attr("stroke", "none").attr("stroke-width", "0px")
 			});
-
+			/*console.log((new Date(1997, 0, 0, 0, 0, 0, 0)).toLocaleString('default', {month: 'long'}));
+			console.log(new Date(1997, 0, 0, 0, 0, 0, 0).getFullYear());*/
 			mainRect.on('mouseenter', (i, d)=>{
-				d3.select("#mainSvg").append("foreignObject")
-				.attr("id", "tooltip")
-				.attr("data-year", d.year)
-				.style('text-justify', 'center')
-				//.attr('id', 'tooltipContainer')
-				.attr("height", "100px").attr("width", "150px").attr("x", xScale(new Date(d.year - 10, 0, 1, 0, 0, 0, 0))).attr("y", ()=>{
-					return yScale(new Date(0, d.month-4, 0, 0, 0, 0, 0));
-				}).append("xhtml:div")
-				//.attr("id", "tooltip")
-				.attr("class", "tooltipDiv")
-				//.attr("data-year", d.year)
-				.html(`<div>${d.year} - ${(new Date(0, d.month, 0, 0, 0, 0, 0)).toLocaleString('default', {month: 'long'})}</div><div></div><div>${(json.baseTemperature + d.variance).toFixed(2)}℃</div><div>${d.variance}℃</div>`);
+				d3.select("#mainSvg").append("foreignObject").style('text-justify', 'center').style("background-color", "green").attr('id', 'tooltipContainer').attr("height", "100px").attr("width", "150px").attr("x", xScale(new Date(d.year - 10, 0, 1, 0, 0, 0, 0))).attr("y", ()=>{
+					console.log(d.month);
+					if(d.month === 12 || d.month === 11){
+						return yScale(new Date(0, d.month-14, 0, 0, 0, 0, 0));
+					}else{
+						return yScale(new Date(0, d.month-2, 0, 0, 0, 0, 0));
+					}
+				}).append("xhtml:div").attr("id", "tooltip").attr("class", "tooltipDiv").attr("data-year", d.year).html(`<div>${d.year} - ${(new Date(0, d.month, 0, 0, 0, 0, 0)).toLocaleString('default', {month: 'long'})}</div><div></div><div>${(json.baseTemperature + d.variance).toFixed(2)}℃</div><div>${d.variance}℃</div>`);
 			})
 			.on('mouseout', ()=>{
-				//d3.select('#tooltipContainer').remove();
+				d3.select('#tooltipContainer').remove();
 				d3.select('#tooltip').remove();
 			});
 
